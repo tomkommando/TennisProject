@@ -13,7 +13,7 @@ class Params:
         self.DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Training Process
-        self.N_EPISODES = 10000  # max episodes
+        self.N_EPISODES = 1150  # max episodes
         self.MAX_T = 2000  # max steps per episode
         self.EPSILON_START = 1
         self.EPSILON_DECAY = 0.999

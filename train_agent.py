@@ -11,7 +11,7 @@ from ddpg_agent1 import Agent
 """
 Set parameters, see parameters.py
 """
-params = Params() # instantiate the parameters
+params = Params()  # instantiate the parameters
 
 # load parameters
 WEIGHTS_FOLDER = params.WEIGHTS_FOLDER
@@ -59,16 +59,19 @@ Train the agent
 
 agent0 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR_WEIGHTS, CRITIC_WEIGHTS)
 agent1 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR_WEIGHTS, CRITIC_WEIGHTS)
-agent1.memory = agent0.memory # use common replay memory
-agents = [agent0, agent1] # add agents to list for easy access
+agent1.memory = agent0.memory  # use common replay memory
+agents = [agent0, agent1]  # add agents to list for easy access
 
-def ddpg(n_episodes, epsilon, eps_decay, max_t = MAX_T, print_every=100):
+
+def ddpg(n_episodes, epsilon, eps_decay, max_t=MAX_T, print_every=100):
     scores_deque = deque(maxlen=print_every)
     scores = []
+    avg_scores = []
     steps = []
+    best_score = -np.inf
     for i_episode in range(1, n_episodes + 1):
 
-        for agent in agents: # reset agent noise process (for each agent)
+        for agent in agents:  # reset agent noise process (for each agent)
             agent.reset()
 
         env_info = env.reset(train_mode=True)[brain_name]  # if you want to watch, set train_mode=False
@@ -79,9 +82,9 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t = MAX_T, print_every=100):
         while True:
 
             for i, state in enumerate(states):
-                agents[i].state = state # update states for agents
+                agents[i].state = state  # update states for agents
 
-            # force random actions in the beginning and then some exploration with decaying epsilon
+            # force random actions in the beginning
             if i_episode >= 500:
                 actions = [agent.act(add_noise=True) for agent in agents]  # select an action (for each agent)
             else:
@@ -93,7 +96,7 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t = MAX_T, print_every=100):
             rewards = env_info.rewards  # get reward (for each agent)
             dones = env_info.local_done  # see if episode finished
 
-            for i, agent in enumerate(agents): # take step (for each agent)
+            for i, agent in enumerate(agents):  # take step (for each agent)
                 agent.step(actions[i], rewards[i], next_states[i], dones[i])
 
             score += env_info.rewards  # update the score (for each agent)
@@ -101,47 +104,50 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t = MAX_T, print_every=100):
             if np.any(dones) or t == max_t:  # exit loop if episode finished
                 break
             t += 1
-        #print(f"Score (max over agents) from episode {i_episode}: {np.max(score)}, with {t} steps")
+        # print(f"Score (max over agents) from episode {i_episode}: {np.max(score)}, with {t} steps")
         scores_deque.append(np.max(score))
+        avg_scores.append(np.mean(scores_deque))
         scores.append(np.max(score))
         steps.append(t)
-        #epsilon = epsilon * eps_decay
+
+        if i_episode + 1 % print_every == 0:
+            print('\rEpisode {}\tAverage Max Score: {:.2f}, Epsilon: {:.4f}\n'.format(i_episode, np.mean(scores_deque)))
+
+        if 0.5 <= np.mean(scores_deque)  and np.mean(scores_deque) > best_score:
+            print('\nNew Best Score at {:d} episodes!\tAverage Max Score: {:.2f}'.format(i_episode,
+                                                                                         np.mean(scores_deque)))
+            best_score = np.mean(scores_deque)
+            torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_best.pth')
+            torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_best.pth')
+            torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_best.pth')
+            torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_best.pth')
 
 
-        if i_episode+1 % print_every == 0:
-            print('\rEpisode {}\tAverage Max Score: {:.2f}, Epsilon: {:.4f}\n'.format(i_episode, np.mean(scores_deque), epsilon))
 
-        if np.mean(scores_deque) >= 0.5:
-            print('\nEnvironment solved in {:d} episodes!\tAverage Max Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
-            break
-
-    return scores, scores_deque, steps
+    return scores, avg_scores, steps
 
 
 # train agent
-scores, scores_deque, steps = ddpg(n_episodes=N_EPISODES, epsilon=EPSILON, eps_decay=EPSILON_DECAY)
+scores, avg_scores, steps = ddpg(n_episodes=N_EPISODES, epsilon=EPSILON, eps_decay=EPSILON_DECAY)
 
 env.close()
-torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_final.pth')
-torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_final.pth')
-torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor2_final.pth')
-torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic2_final.pth')
+torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_final.pth')
+torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_final.pth')
+torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_final.pth')
+torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_final.pth')
 
 # plot scores
+fig, ax = plt.subplots(2, 1)
+ax[0].plot(scores)
+ax[0].plot(avg_scores)
 
-plt.plot(np.arange(1, len(scores) + 1), scores)
-plt.ylabel('Score')
-plt.xlabel('Episode #')
-plt.savefig(WEIGHTS_FOLDER + 'scores')
+ax[0].set_ylabel("Score")
+ax[0].set_xlabel("Episode")
 
-# plot avg scores
-plt.plot(np.arange(1, len(scores_deque) + 1), scores_deque)
-plt.ylabel('Avg Score')
-plt.xlabel('Episode #')
-plt.savefig(WEIGHTS_FOLDER + 'avg_scores')
+ax[1].plot(steps)
+ax[1].set_ylabel("Steps")
+ax[1].set_xlabel("Episode")
 
-# plot avg scores
-plt.plot(np.arange(1, len(steps) + 1), steps)
-plt.ylabel('Steps')
-plt.xlabel('Episode #')
-plt.savefig(WEIGHTS_FOLDER + 'steps')
+fig.tight_layout()
+plt.savefig(WEIGHTS_FOLDER + 'scores0')
+plt.show()
