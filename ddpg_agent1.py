@@ -51,25 +51,25 @@ class Agent():
 
         self.state = None
 
+        print(self.actor_local)
+
         if actor_weights is not None:
             self.actor_local.load_state_dict(actor_weights)
             self.actor_target.load_state_dict(actor_weights)
-
-
-        print(self.actor_local)
 
         # Critic Network (w/ Target Network)
         self.critic_local = Critic(state_size, action_size, random_seed, FC1_UNITS_CRITIC, FC2_UNITS_CRITIC).to(device)
         self.critic_target = Critic(state_size, action_size, random_seed, FC1_UNITS_CRITIC, FC2_UNITS_CRITIC).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
+        print(self.critic_local)
+
         # load existing weights, if available
         if critic_weights is not None:
             self.critic_local.load_state_dict(critic_weights)
             self.critic_target.load_state_dict(critic_weights)
 
-        # Noise process, own noise for each agent
-        #self.noise = OUNoise((num_agents, action_size), random_seed, mu, theta, sigma)
+        # Add noise to force some exploration
         self.noise = OUNoise(action_size, random_seed, mu, theta, sigma)
 
         # Replay memory

@@ -6,33 +6,33 @@ class Params:
 
         # Output folders ...
         self.WEIGHTS_FOLDER = "./outputs/"
-        self.CRITIC_WEIGHTS = None #torch.load(self.WEIGHTS_FOLDER + "checkpoint_critic67.pth")
-        self.ACTOR_WEIGHTS = None #torch.load(self.WEIGHTS_FOLDER + "checkpoint_actor67.pth")
+        self.CRITIC0_WEIGHTS = None # torch.load(self.WEIGHTS_FOLDER + "checkpoint_critic0_best.pth")
+        self.ACTOR0_WEIGHTS = None # torch.load(self.WEIGHTS_FOLDER + "checkpoint_actor0_best.pth")
+        self.CRITIC1_WEIGHTS = None # torch.load(self.WEIGHTS_FOLDER + "checkpoint_critic1_best.pth")
+        self.ACTOR1_WEIGHTS = None # torch.load(self.WEIGHTS_FOLDER + "checkpoint_actor1_best.pth")
 
         # Use GPU when available
         self.DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Training Process
-        self.N_EPISODES = 1150  # max episodes
+        self.N_EPISODES = 1200  # max episodes
         self.MAX_T = 2000  # max steps per episode
-        self.EPSILON_START = 1
-        self.EPSILON_DECAY = 0.999
 
         # Agent
         self.AGENT_SEED = 0  # random seed for agent
         self.BUFFER_SIZE = int(1e6)  # replay buffer size
         self.BATCH_SIZE = 512  # minibatch size
         self.GAMMA = 0.99  # discount factor
-        self.TAU = 0.003  # interpolation parameter for soft update of target parameters
+        self.TAU = 0.01  # interpolation parameter for soft update of target parameters
         self.WEIGHT_DECAY = 0  # L2 weight decay
 
         # Network
         self.NN_SEED = 0  # random seed for Pytorch operations / networks
-        self.LR_ACTOR = 0.001  # learning rate of the actor
+        self.LR_ACTOR = 0.003  # learning rate of the actor
         self.FC1_UNITS_ACTOR = 64  # size of first hidden layer, actor
         self.FC2_UNITS_ACTOR = 128  # size of second hidden layer, actor
 
-        self.LR_CRITIC = 0.001  # learning rate of the critic
+        self.LR_CRITIC = 0.003  # learning rate of the critic
         self.FC1_UNITS_CRITIC = 64  # size of first hidden layer, critic
         self.FC2_UNITS_CRITIC = 128  # size of second hidden layer, critic
 

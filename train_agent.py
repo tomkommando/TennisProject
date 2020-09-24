@@ -15,21 +15,23 @@ params = Params()  # instantiate the parameters
 
 # load parameters
 WEIGHTS_FOLDER = params.WEIGHTS_FOLDER
-ACTOR_WEIGHTS = params.ACTOR_WEIGHTS
-CRITIC_WEIGHTS = params.CRITIC_WEIGHTS
+CRITIC0_WEIGHTS = params.CRITIC0_WEIGHTS
+ACTOR0_WEIGHTS = params.ACTOR0_WEIGHTS
+CRITIC1_WEIGHTS = params.CRITIC1_WEIGHTS
+ACTOR1_WEIGHTS = params.ACTOR1_WEIGHTS
 MU = params.MU
 THETA = params.THETA
 SIGMA = params.SIGMA
 AGENT_SEED = params.AGENT_SEED
 N_EPISODES = params.N_EPISODES
 MAX_T = params.MAX_T
-EPSILON = params.EPSILON_START
-EPSILON_DECAY = params.EPSILON_DECAY
 
 """
 Create Environment
 """
+# if you want to watch the agent train. Select no_graphics=False
 env = UnityEnvironment(file_name='./python/Tennis.exe', no_graphics=True)
+#env = UnityEnvironment(file_name='./python/Tennis.exe', no_graphics=False)
 
 # get the default brain
 brain_name = env.brain_names[0]
@@ -57,14 +59,16 @@ print('The state for the first agent looks like:', states[0])
 Train the agent
 """
 
-agent0 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR_WEIGHTS, CRITIC_WEIGHTS)
-agent1 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR_WEIGHTS, CRITIC_WEIGHTS)
+agent0 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR0_WEIGHTS, CRITIC0_WEIGHTS)
+agent1 = Agent(num_agents, state_size, action_size, AGENT_SEED, MU, THETA, SIGMA, ACTOR1_WEIGHTS, CRITIC1_WEIGHTS)
 agent1.memory = agent0.memory  # use common replay memory
+
+
 agents = [agent0, agent1]  # add agents to list for easy access
 
 
-def ddpg(n_episodes, epsilon, eps_decay, max_t=MAX_T, print_every=100):
-    scores_deque = deque(maxlen=print_every)
+def ddpg(n_episodes, max_t=MAX_T, print_every=10):
+    scores_deque = deque(maxlen=100)
     scores = []
     avg_scores = []
     steps = []
@@ -84,7 +88,8 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t=MAX_T, print_every=100):
             for i, state in enumerate(states):
                 agents[i].state = state  # update states for agents
 
-            # force random actions in the beginning
+            # force random actions in the beginning.
+            # if you want to watch the agents playing, don't force randomness :)
             if i_episode >= 500:
                 actions = [agent.act(add_noise=True) for agent in agents]  # select an action (for each agent)
             else:
@@ -101,7 +106,7 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t=MAX_T, print_every=100):
 
             score += env_info.rewards  # update the score (for each agent)
             states = next_states  # roll over states to next time step
-            if np.any(dones) or t == max_t:  # exit loop if episode finished
+            if np.any(dones): # or t == max_t:  # exit loop if episode finished
                 break
             t += 1
         # print(f"Score (max over agents) from episode {i_episode}: {np.max(score)}, with {t} steps")
@@ -110,31 +115,29 @@ def ddpg(n_episodes, epsilon, eps_decay, max_t=MAX_T, print_every=100):
         scores.append(np.max(score))
         steps.append(t)
 
-        if i_episode + 1 % print_every == 0:
-            print('\rEpisode {}\tAverage Max Score: {:.2f}, Epsilon: {:.4f}\n'.format(i_episode, np.mean(scores_deque)))
+        if i_episode % print_every == 0:
+            print('\rEpisode {}\tAverage Max Score: {:.2f}\n'.format(i_episode, np.mean(scores_deque)))
 
         if 0.5 <= np.mean(scores_deque)  and np.mean(scores_deque) > best_score:
             print('\nNew Best Score at {:d} episodes!\tAverage Max Score: {:.2f}'.format(i_episode,
                                                                                          np.mean(scores_deque)))
             best_score = np.mean(scores_deque)
-            torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_best.pth')
-            torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_best.pth')
-            torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_best.pth')
-            torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_best.pth')
-
-
+            torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_best0.pth')
+            torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_best0.pth')
+            torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_best0.pth')
+            torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_best0.pth')
 
     return scores, avg_scores, steps
 
 
 # train agent
-scores, avg_scores, steps = ddpg(n_episodes=N_EPISODES, epsilon=EPSILON, eps_decay=EPSILON_DECAY)
+scores, avg_scores, steps = ddpg(n_episodes=N_EPISODES)
 
 env.close()
-torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_final.pth')
-torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_final.pth')
-torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_final.pth')
-torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_final.pth')
+# torch.save(agent0.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor0_final.pth')
+# torch.save(agent0.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic0_final.pth')
+# torch.save(agent1.actor_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_actor1_final.pth')
+# torch.save(agent1.critic_local.state_dict(), WEIGHTS_FOLDER + 'checkpoint_critic1_final.pth')
 
 # plot scores
 fig, ax = plt.subplots(2, 1)
