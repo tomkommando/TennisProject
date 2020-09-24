@@ -2,9 +2,9 @@
 
 ### Introduction
 
-In this environment, two agents control rackets to bounce a ball over a net. If an agent hits the ball over the net, it receives a reward of +0.1.  If an agent lets a ball hit the ground or hits the ball out of bounds, it receives a reward of -0.01.  Thus, the goal of each agent is to keep the ball in play. Trained agents in action looks like this:
+In this environment, two agents control rackets to bounce a ball over a net. If an agent hits the ball over the net, it receives a reward of +0.1.  If an agent lets a ball hit the ground or hits the ball out of bounds, it receives a reward of -0.01.  Thus, the goal of each agent is to keep the ball in play. Trained agents in action look like this:
 
-![Agent After](./outputs/Tennis_after.GIF)
+![Agent After](./outputs/Tennis_after.gif)
 
 The observation space consists of 8 variables corresponding to the position and velocity of the ball and racket. Each agent receives its own, local observation.  Two continuous actions are available, corresponding to movement toward (or away from) the net, and jumping. 
 
@@ -15,7 +15,7 @@ The task is episodic, and in order to solve the environment, your agents must ge
 
 The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
 
-We train the agent using [Deep Deterministic Policy Gradient](https://arxiv.org/abs/1509.02971) algorithm with some tweaks and the training process is documented [here](.\Report.md).
+We train the agents using [Deep Deterministic Policy Gradient](https://arxiv.org/abs/1509.02971) algorithm with some tweaks and the training process is documented [here](.\Report.md).
 
 ### Getting Started
 
