@@ -15,7 +15,7 @@ The task is episodic, and in order to solve the environment, your agents must ge
 
 The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
 
-We train the agents using [Deep Deterministic Policy Gradient](https://arxiv.org/abs/1509.02971) algorithm with some tweaks and the training process is documented [here](.\Report.md).
+We train the agents using [Deep Deterministic Policy Gradient](https://arxiv.org/abs/1509.02971) algorithm with some tweaks and the training process is documented [here](./Report.md).
 
 ### Getting Started
 
@@ -52,5 +52,5 @@ pip install -r requirements.txt
 python train_agent.py
 ```
 
-6. if you want to watch trained agent, follow the instructions in  `train_agent.py`. Saved weights for trained agent can be found in the `output\` folder.
+6. if you want to watch trained agent, follow the instructions in  `train_agent.py`. Saved weights for trained agent can be found in the `.\output\` folder.
 
