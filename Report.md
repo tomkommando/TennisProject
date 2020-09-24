@@ -80,7 +80,7 @@ self.SIGMA = 0.1  # volatility
 
 In the Udacity discussion forums, someone mentioned that using common weights for Critic neural networks yields more stable training process. That could be a quick win we could try. Further, it's always fun (and sometimes useful) to tweak hyperparameters to try and get better results. Would be interesting to throw other [Unity ML](https://github.com/Unity-Technologies/ml-agents) as well as (continuous) [OpenAI Gym](https://gym.openai.com/) environments at this algorithm and see how it performs.
 
-To further improve this algorithm, we could try prioritised replay buffer introduced in this [paper](https://arxiv.org/abs/1511.05952) and implemented for example in this [repository](https://github.com/ShangtongZhang/DeepRL). 
+To further improve this algorithm, we could try prioritised replay buffer introduced in this [paper](https://arxiv.org/abs/1511.05952) and implemented for example in this [repository](https://github.com/ShangtongZhang/DeepRL). We could try a new algorithm altogether - for example [Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments](https://arxiv.org/abs/1706.02275).
 
 
 ### Sources:
